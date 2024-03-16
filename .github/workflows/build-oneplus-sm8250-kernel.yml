@@ -17,7 +17,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
-        ref: oos13
+        ref: oss13
         fetch-depth: 10
 
     - name: Set up ccache
