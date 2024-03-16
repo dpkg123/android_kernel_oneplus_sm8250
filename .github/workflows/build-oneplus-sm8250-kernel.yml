@@ -53,7 +53,7 @@ jobs:
         echo "[+] GKI_ROOT: $GKI_ROOT"
 
         DRIVER_DIR="$GKI_ROOT/drivers"
-        test -d "$GKI_ROOT/KernelSU" || git clone https://github.com/tiann/KernelSU
+        test -d "$GKI_ROOT/KernelSU" || git clone https://github.com/dabao1955/KernelSU
         cd "$GKI_ROOT/KernelSU"
         git stash
         if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
@@ -87,8 +87,9 @@ jobs:
         export PATH=$(pwd)/clang/bin/:$PATH
         export ARCH=arm64
         export SUBARCH=arm64
-        make $KERNEL_CMDLINE $KERNEL_DEFCONFIG CC="ccache clang"
-        make $KERNEL_CMDLINE CC="ccache clang" -j$(nproc --all)
+        mkdir out
+        make $KERNEL_CMDLINE $KERNEL_DEFCONFIG CC=clang
+        make $KERNEL_CMDLINE CC=clang -j$(nproc --all)
         cp out/arch/arm64/boot/Image.gz AnyKernel3
 
     - name: Upload Kernel-SU
