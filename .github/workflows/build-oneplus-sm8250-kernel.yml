@@ -46,21 +46,6 @@ jobs:
       run: |
         echo "TIME=$(TZ=UTC-8 date +%m%d%H%M )" >> $GITHUB_OUTPUT
 
-    - name: Build Kernel
-      run: |
-       export PATH=$(pwd)/clang/bin/:$PATH
-       export ARCH=arm64
-       export SUBARCH=arm64
-       make $KERNEL_CMDLINE $KERNEL_DEFCONFIG CC="ccache clang"
-       make $KERNEL_CMDLINE CC="ccache clang" -j$(nproc --all)
-       cp out/arch/arm64/boot/Image.gz AnyKernel3
-
-    - name: Upload Kernel
-      uses: actions/upload-artifact@v3
-      with:
-        name: Qiuqiu-kernel-${{ steps.get_time.outputs.TIME }}
-        path: "AnyKernel3/*"
-
     - name: Build Kernel-SU
       run: |
         GKI_ROOT=$(pwd)
@@ -98,7 +83,10 @@ jobs:
  
         echo '[+] Done.'
         echo "CONFIG_KSU=m" >> $KERNEL_DEFCONFIG
+
         export PATH=$(pwd)/clang/bin/:$PATH
+        export ARCH=arm64
+        export SUBARCH=arm64
         make $KERNEL_CMDLINE $KERNEL_DEFCONFIG CC="ccache clang"
         make $KERNEL_CMDLINE CC="ccache clang" -j$(nproc --all)
         cp out/arch/arm64/boot/Image.gz AnyKernel3
