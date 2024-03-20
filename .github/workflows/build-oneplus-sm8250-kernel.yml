@@ -40,45 +40,14 @@ jobs:
 
     - name: Build Kernel-SU
       run: |
-        GKI_ROOT=$(pwd)
-
-        echo "[+] GKI_ROOT: $GKI_ROOT"
-
-        DRIVER_DIR="$GKI_ROOT/drivers"
-        test -d "$GKI_ROOT/KernelSU" || git clone https://github.com/dabao1955/KernelSU
-        cd "$GKI_ROOT/KernelSU"
-        git stash
-        if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
-             git checkout main
-        fi
-        git pull
-        if [ -z "${1-}" ]; then
-            git checkout "$(git describe --abbrev=0 --tags)"
-        else
-            git checkout "$1"
-        fi
-        cd "$GKI_ROOT"
-
-        echo "[+] GKI_ROOT: $GKI_ROOT"
-        echo "[+] Copy kernel su driver to $DRIVER_DIR"
-
-        cd "$DRIVER_DIR"
-        ln -sf "../KernelSU/kernel" "kernelsu"
-        cd "$GKI_ROOT"
-
-        echo '[+] Add kernel su driver to Makefile'
-
-        DRIVER_MAKEFILE=$DRIVER_DIR/Makefile
-        DRIVER_KCONFIG=$DRIVER_DIR/Kconfig
-        grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-y += kernelsu/\n" >> "$DRIVER_MAKEFILE"
-        grep -q "kernelsu" "$DRIVER_KCONFIG" || sed -i "/endmenu/i\\source \"drivers/kernelsu/Kconfig\"" "$DRIVER_KCONFIG"
- 
-        echo '[+] Done.'
+        curl -SsL https://github.com/tiann/kernelsu/raw/main/kernel/setup.sh | bash
+        sed -i '/config KSU/,/help/{s/default y/default m/}' drivers/kernelsu/Kconfig
 
         export PATH=$(pwd)/clang/bin/:$PATH
         mkdir out
         make $KERNEL_CMDLINE $KERNEL_DEFCONFIG CC=clang
         make $KERNEL_CMDLINE CC=clang -j$(nproc --all)
+        test -f out/drivers/kernelsu/kernelsu.ko && cp out/drivers/kernelsu/kernelsu.ko Anykernel3
         cp out/arch/arm64/boot/Image.gz AnyKernel3
 
     - name: Upload Kernel-SU
